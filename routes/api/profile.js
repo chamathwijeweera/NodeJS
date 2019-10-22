@@ -9,7 +9,7 @@ const User = require("../../models/User");
 
 // @route   GET api/profile/me
 // desc     Get current user's profile
-// access    Private
+// access   Private
 router.get("/me", authentication, async (req, res) => {
   try {
     const profile = await Profile.findOne({ user: req.user.id }).populate(
@@ -30,7 +30,7 @@ router.get("/me", authentication, async (req, res) => {
 
 // @route   POST api/profile
 // desc     Create or update user profile
-// access    Private
+// access   Private
 router.post(
   "/",
   [
@@ -116,7 +116,7 @@ router.post(
 
 // @route   GET api/profile
 // desc     Get all profiles
-// access    Public
+// access   Public
 router.get("/", async (req, res) => {
   try {
     const profiles = await Profile.find().populate("user", ["name", "avatar"]);
@@ -129,7 +129,7 @@ router.get("/", async (req, res) => {
 
 // @route   GET api/profile/user/:user_id
 // desc     Get profile by user ID
-// access    Public
+// access   Public
 router.get("/user/:user_id", async (req, res) => {
   try {
     const profile = await Profile.findOne({
@@ -148,7 +148,7 @@ router.get("/user/:user_id", async (req, res) => {
 
 // @route   Delete api/profile
 // desc     Delete profile, user & posts
-// access    Public
+// access   Public
 router.delete("/", authentication, async (req, res) => {
   try {
     await Profile.findOneAndRemove({ user: req.user.id });
@@ -161,7 +161,7 @@ router.delete("/", authentication, async (req, res) => {
 
 // @route   GET api/profile/experience
 // desc     add profile experience
-// access    Private
+// access   Private
 router.put(
   "/experience",
   [
@@ -221,8 +221,8 @@ router.put(
 
 // @route   Delete api/profile/experience/:exp_id
 // desc     Delete experience from profile
-// access    Private
-router.delete("/experience/exp_id", authentication, async (req, res) => {
+// access   Private
+router.delete("/experience/:exp_id", authentication, async (req, res) => {
   try {
     const profile = await Profile.findOne({ user: req.user.id });
 
@@ -232,6 +232,92 @@ router.delete("/experience/exp_id", authentication, async (req, res) => {
       .indexOf(req.params.exp_id);
 
     profile.experience.splice(removeIndex, 1);
+
+    await profile.save();
+
+    res.json(profile);
+  } catch (error) {
+    logger.error(error);
+    res.status(500).send("Server error");
+  }
+});
+
+// @route   GET api/profile/education
+// desc     add profile education
+// access   Private
+router.put(
+  "/education",
+  [
+    authentication,
+    [
+      check("school", "School is required")
+        .not()
+        .isEmpty(),
+      check("degree", "Degree is required")
+        .not()
+        .isEmpty(),
+      check("fieldofstudy", "Field of study is required")
+        .not()
+        .isEmpty(),
+      check("from", "From date is required")
+        .not()
+        .isEmpty()
+    ]
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const {
+      school,
+      degree,
+      fieldofstudy,
+      from,
+      to,
+      current,
+      description
+    } = req.body;
+
+    const newEducation = {
+      school,
+      degree,
+      fieldofstudy,
+      from,
+      to,
+      current,
+      description
+    };
+
+    try {
+      const profile = await Profile.findOne({ user: req.user.id });
+
+      profile.education.unshift(newEducation);
+
+      await profile.save();
+
+      res.json(profile);
+    } catch (error) {
+      logger.error(error);
+      res.status(500).send("Server error");
+    }
+  }
+);
+
+// @route   Delete api/profile/education/:exp_id
+// desc     Delete education from profile
+// access   Private
+router.delete("/education/:edu_id", authentication, async (req, res) => {
+  try {
+    const profile = await Profile.findOne({ user: req.user.id });
+
+    // Get remove index
+    const removeIndex = profile.education
+      .map(item => item.id)
+      .indexOf(req.params.edu_id);
+
+    profile.education.splice(removeIndex, 1);
 
     await profile.save();
 
