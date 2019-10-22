@@ -9,7 +9,7 @@ const User = require("../../models/User");
 
 // @route   GET api/profile/me
 // desc     Get current user's profile
-//access    Private
+// access    Private
 router.get("/me", authentication, async (req, res) => {
   try {
     const profile = await Profile.findOne({ user: req.user.id }).populate(
@@ -30,7 +30,7 @@ router.get("/me", authentication, async (req, res) => {
 
 // @route   POST api/profile
 // desc     Create or update user profile
-//access    Private
+// access    Private
 router.post(
   "/",
   [
@@ -116,7 +116,7 @@ router.post(
 
 // @route   GET api/profile
 // desc     Get all profiles
-//access    Public
+// access    Public
 router.get("/", async (req, res) => {
   try {
     const profiles = await Profile.find().populate("user", ["name", "avatar"]);
@@ -129,7 +129,7 @@ router.get("/", async (req, res) => {
 
 // @route   GET api/profile/user/:user_id
 // desc     Get profile by user ID
-//access    Public
+// access    Public
 router.get("/user/:user_id", async (req, res) => {
   try {
     const profile = await Profile.findOne({
@@ -148,7 +148,7 @@ router.get("/user/:user_id", async (req, res) => {
 
 // @route   Delete api/profile
 // desc     Delete profile, user & posts
-//access    Public
+// access    Public
 router.delete("/", authentication, async (req, res) => {
   try {
     await Profile.findOneAndRemove({ user: req.user.id });
@@ -161,7 +161,7 @@ router.delete("/", authentication, async (req, res) => {
 
 // @route   GET api/profile/experience
 // desc     add profile experience
-//access    Private
+// access    Private
 router.put(
   "/experience",
   [
@@ -218,5 +218,28 @@ router.put(
     }
   }
 );
+
+// @route   Delete api/profile/experience/:exp_id
+// desc     Delete experience from profile
+// access    Private
+router.delete("/experience/exp_id", authentication, async (req, res) => {
+  try {
+    const profile = await Profile.findOne({ user: req.user.id });
+
+    // Get remove index
+    const removeIndex = profile.experience
+      .map(item => item.id)
+      .indexOf(req.params.exp_id);
+
+    profile.experience.splice(removeIndex, 1);
+
+    await profile.save();
+
+    res.json(profile);
+  } catch (error) {
+    logger.error(error);
+    res.status(500).send("Server error");
+  }
+});
 
 module.exports = router;
