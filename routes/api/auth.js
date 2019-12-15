@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const auth = require("../../middleware/auth");
+const authentication = require("../../middleware/auth");
 const bcrypt = require("bcryptjs");
 const JWT = require("jsonwebtoken");
 const config = require("config");
@@ -12,7 +12,7 @@ const User = require("../../models/User");
 // desc     Test route
 //access    Public
 
-router.get("/", auth, async (req, res) => {
+router.get("/", authentication, async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select("-password");
     res.json(user);

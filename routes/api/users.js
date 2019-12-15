@@ -97,7 +97,7 @@ router.post(
         }
       });
 
-      // Return JWT
+      //Return JWT
       // const payload = {
       //   user: {
       //     id: user.id
