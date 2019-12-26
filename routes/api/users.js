@@ -88,30 +88,30 @@ router.post(
 
       await user.save();
 
-      res.json({
-        user: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          avatar: user.avatar
-        }
-      });
+      // res.json({
+      //   user: {
+      //     id: user.id,
+      //     name: user.name,
+      //     email: user.email,
+      //     avatar: user.avatar
+      //   }
+      // });
 
       //Return JWT
-      // const payload = {
-      //   user: {
-      //     id: user.id
-      //   }
-      // };
-      // JWT.sign(
-      //   payload,
-      //   config.get("jwtSecret"),
-      //   { expiresIn: 36000000 },
-      //   (error, token) => {
-      //     if (error) throw error;
-      //     res.json({ token });
-      //   }
-      // );
+      const payload = {
+        user: {
+          id: user.id
+        }
+      };
+      JWT.sign(
+        payload,
+        config.get("jwtSecret"),
+        { expiresIn: 36000000 },
+        (error, token) => {
+          if (error) throw error;
+          res.json({ token });
+        }
+      );
     } catch (error) {
       console.log(error.message);
       req.status(500).send("Server error");
